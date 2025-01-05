@@ -3,13 +3,20 @@ import axios from 'axios';
 
 const DisplayAllImages = () => {
   const [images, setImages] = useState([]);
-  
+
   useEffect(() => {
     // Fetch all images from the backend
     const fetchImages = async () => {
       try {
         const response = await axios.get('http://localhost:5000/images');
-        setImages(response.data);
+        console.log(response);
+        // Assuming response contains an array of image metadata (with id, caption, etc.)
+        const imagesWithBase64 = await Promise.all(response.data.map(async (image) => {
+          const imageData = await fetchImageData(image.id); // Fetch image by ID
+          return { ...image, imageUrl: imageData };
+        }));
+
+        setImages(imagesWithBase64);
       } catch (error) {
         console.error('Error fetching images:', error);
       }
@@ -17,6 +24,23 @@ const DisplayAllImages = () => {
 
     fetchImages();
   }, []);
+
+  const fetchImageData = async (imageId) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/image/${imageId}`, {
+        responseType: 'arraybuffer',  // Receive binary data
+      });
+
+      // Convert binary data to base64 string
+      const base64Image = Buffer.from(response.data, 'binary').toString('base64');
+      
+      // Assuming MIME type is set as part of response (like image/jpeg, image/png, etc.)
+      return `data:image/jpeg;base64,${base64Image}`; // Change MIME type if needed
+    } catch (error) {
+      console.error('Error fetching image data:', error);
+      return '';
+    }
+  };
 
   return (
     <div className="container">
