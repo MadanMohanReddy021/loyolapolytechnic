@@ -8,7 +8,7 @@ const DisplayAllImages = () => {
     // Fetch all images from the backend
     const fetchImages = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/images');
+        const response = await axios.get('http://backend-upqj.onrender.com/images');
         console.log(response);
         // Assuming response contains an array of image metadata (with id, caption, etc.)
         const imagesWithBase64 = await Promise.all(response.data.map(async (image) => {
